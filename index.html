@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kaju Reklam Sipariş Takip</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#111;background:#f3f4f6}*{box-sizing:border-box}body{margin:0;background:#f3f4f6}.wrap{max-width:760px;margin:auto;padding:16px}.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #0000000d}.login{max-width:460px;margin:9vh auto}h1{font-size:26px;margin:0 0 16px}h2{font-size:20px;margin:0 0 12px}label{display:block;font-size:13px;font-weight:700;margin-top:10px}input,select,textarea,button{width:100%;font:inherit;border-radius:10px;padding:12px;margin-top:6px}input,select,textarea{border:1px solid #d1d5db;background:#fff}textarea{min-height:82px;resize:vertical}button{border:0;background:#111;color:#fff;font-weight:700;cursor:pointer}.secondary{background:#6b7280}.light{background:#e5e7eb;color:#111}.danger{background:#991b1b}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.top{display:flex;gap:10px;align-items:center;justify-content:space-between}.top button{width:auto;padding:10px 14px}.msg{padding:11px;border-radius:10px;margin-top:10px}.err{background:#fee2e2;color:#991b1b}.ok{background:#dcfce7;color:#166534}.order{border:1px solid #e5e7eb;border-radius:12px;padding:13px;margin:10px 0;line-height:1.55}.order-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.badge{font-size:12px;background:#f3f4f6;border-radius:999px;padding:5px 9px}.actions{display:flex;gap:8px;margin-top:10px}.actions button{margin:0}.hidden{display:none!important}@media(max-width:560px){.row{grid-template-columns:1fr}.wrap{padding:10px}.card{border-radius:13px}h1{font-size:24px}.actions{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="loginBox" class="card login">
+    <h1>Kaju Reklam Sipariş Takip</h1>
+    <form id="loginForm">
+      <label>E-posta</label><input id="email" type="email" autocomplete="username" required>
+      <label>Şifre</label><input id="password" type="password" autocomplete="current-password" required>
+      <button type="submit">Giriş Yap</button>
+      <div id="loginMsg"></div>
+    </form>
+  </section>
+
+  <main id="app" class="hidden">
+    <section class="card top"><h1>Kaju Reklam Sipariş Takip</h1><button id="logout" class="secondary">Çıkış Yap</button></section>
+    <section class="card">
+      <h2 id="formTitle">Yeni Sipariş</h2>
+      <form id="orderForm">
+        <input id="editId" type="hidden">
+        <div class="row"><div><label>Müşteri</label><input id="musteri" required></div><div><label>İş / Ürün</label><input id="urun" required></div></div>
+        <div class="row"><div><label>Adet</label><input id="adet" type="number" min="0"></div><div><label>Durum</label><select id="durum"><option>Sipariş Alındı</option><option>Grafik</option><option>Üretim</option><option>Hazır</option><option>Teslim Edildi</option></select></div></div>
+        <div class="row"><div><label>Sipariş Tarihi</label><input id="siparisTarihi" type="date"></div><div><label>Teslim Tarihi</label><input id="teslimTarihi" type="date"></div></div>
+        <label>Not</label><textarea id="notlar"></textarea>
+        <div class="actions"><button id="saveBtn" type="submit">Siparişi Kaydet</button><button id="cancelEdit" type="button" class="light hidden">Düzenlemeyi İptal Et</button></div>
+        <div id="orderMsg"></div>
+      </form>
+    </section>
+    <section class="card"><input id="search" placeholder="Müşteri, ürün veya sipariş no ara"></section>
+    <section class="card"><h2>Aktif Siparişler</h2><div id="active">Yükleniyor...</div></section>
+    <section class="card"><h2>Teslim Edilenler</h2><div id="done">Yükleniyor...</div></section>
+  </main>
+</div>
+<script>
+const SUPABASE_URL='https://dugdnyokncbgsjbrbgls.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_XS_0CNEfu4FbdVenrpg0AQ_7dRB07EG';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id); let orders=[];
+const today=()=>new Date().toISOString().slice(0,10);
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+function message(id,text,ok=false){$(id).innerHTML=text?`<div class="msg ${ok?'ok':'err'}">${esc(text)}</div>`:''}
+function showLogin(){$('loginBox').classList.remove('hidden');$('app').classList.add('hidden')}
+async function showApp(){$('loginBox').classList.add('hidden');$('app').classList.remove('hidden');if(!$('siparisTarihi').value)$('siparisTarihi').value=today();await loadOrders()}
+async function init(){try{const {data,error}=await sb.auth.getSession();if(error)throw error;data.session?await showApp():showLogin();sb.auth.onAuthStateChange((_event,session)=>{session?showApp():showLogin()})}catch(e){showLogin();message('loginMsg','Bağlantı hatası: '+e.message)}}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();message('loginMsg','');const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)message('loginMsg','Giriş başarısız: '+error.message)});
+$('logout').onclick=()=>sb.auth.signOut();
+function resetForm(){$('orderForm').reset();$('editId').value='';$('siparisTarihi').value=today();$('formTitle').textContent='Yeni Sipariş';$('saveBtn').textContent='Siparişi Kaydet';$('cancelEdit').classList.add('hidden');message('orderMsg','')}
+$('cancelEdit').onclick=resetForm;
+$('orderForm').addEventListener('submit',async e=>{e.preventDefault();message('orderMsg','');const id=$('editId').value;const payload={musteri:$('musteri').value.trim(),urun:$('urun').value.trim(),adet:$('adet').value?Number($('adet').value):null,siparis_tarihi:$('siparisTarihi').value||null,teslim_tarihi:$('teslimTarihi').value||null,durum:$('durum').value,notlar:$('notlar').value.trim(),updated_at:new Date().toISOString()};let result=id?await sb.from('siparisler').update(payload).eq('id',id):await sb.from('siparisler').insert(payload);if(result.error){message('orderMsg','Kaydedilemedi: '+result.error.message);return}resetForm();message('orderMsg',id?'Sipariş güncellendi.':'Sipariş kaydedildi.',true);await loadOrders()});
+async function loadOrders(){const {data,error}=await sb.from('siparisler').select('*').order('id',{ascending:false});if(error){$('active').innerHTML=`<div class="msg err">${esc(error.message)}</div>`;$('done').innerHTML='';return}orders=data||[];render()}
+function editOrder(id){const o=orders.find(x=>String(x.id)===String(id));if(!o)return;$('editId').value=o.id;$('musteri').value=o.musteri||'';$('urun').value=o.urun||'';$('adet').value=o.adet??'';$('siparisTarihi').value=o.siparis_tarihi||'';$('teslimTarihi').value=o.teslim_tarihi||'';$('durum').value=o.durum||'Sipariş Alındı';$('notlar').value=o.notlar||'';$('formTitle').textContent='Siparişi Düzenle';$('saveBtn').textContent='Değişiklikleri Kaydet';$('cancelEdit').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})}
+function card(o){return `<div class="order"><div class="order-head"><b>Sipariş No: #${esc(o.siparis_no)}</b><span class="badge">${esc(o.durum)}</span></div><b>Müşteri:</b> ${esc(o.musteri)}<br><b>İş / Ürün:</b> ${esc(o.urun)}<br><b>Adet:</b> ${esc(o.adet)}<br><b>Sipariş Tarihi:</b> ${esc(o.siparis_tarihi)}<br><b>Teslim Tarihi:</b> ${esc(o.teslim_tarihi)}<br><b>Not:</b> ${esc(o.notlar)}<div class="actions"><button type="button" onclick="editOrder('${esc(o.id)}')">Düzenle</button></div></div>`}
+function render(){const q=$('search').value.toLocaleLowerCase('tr-TR').trim();const list=orders.filter(o=>!q||String(o.siparis_no||'').toLocaleLowerCase('tr-TR').includes(q)||String(o.musteri||'').toLocaleLowerCase('tr-TR').includes(q)||String(o.urun||'').toLocaleLowerCase('tr-TR').includes(q));const active=list.filter(o=>o.durum!=='Teslim Edildi'),done=list.filter(o=>o.durum==='Teslim Edildi');$('active').innerHTML=active.length?active.map(card).join(''):'Aktif sipariş yok.';$('done').innerHTML=done.length?done.map(card).join(''):'Teslim edilen sipariş yok.'}
+$('search').addEventListener('input',render);resetForm();init();
+</script>
+</body></html>
