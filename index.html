@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kaju Reklam Sipariş Takip</title><link rel="apple-touch-icon" href="5C628A0A-C12F-4903-8B90-36FC0329F065.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
- <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kaju Sipariş">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15,18 +15,18 @@
 .card{background:#fff;border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 5px 20px #0000000d}
 .top{display:flex;justify-content:space-between;align-items:center;gap:15px}.brand h1{margin:0;font-size:27px}.brand small{color:#667085}
 button,input,select,textarea{font:inherit;border-radius:12px}input,select,textarea{width:100%;border:1px solid #d0d5dd;padding:13px;background:#fff}textarea{min-height:105px;resize:vertical}
-label{display:block;font-weight:700;margin:13px 0 7px}.btn{border:0;padding:13px 16px;font-weight:800;cursor:pointer}.black{background:#111;color:#fff}.gray{background:#667085;color:#fff}.red{background:#d92d20;color:#fff}.green{background:#12a150;color:#fff}
+label{display:block;font-weight:700;margin:13px 0 7px}.btn{border:0;padding:13px 16px;font-weight:800;cursor:pointer}.black{background:#111;color:#fff}.gray{background:#667085;color:#fff}.red{background:#d92d20;color:#fff}.green{background:#12a150;color:#fff}.orange{background:#f79009;color:#fff}
 .full{width:100%;font-size:18px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hidden{display:none!important}
-.nav{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}.nav button{border:0;padding:14px 8px;font-weight:800;background:#e9edf2}.nav .on{background:#111;color:#fff}
+.nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}.nav button{border:0;padding:14px 8px;font-weight:800;background:#e9edf2}.nav .on{background:#111;color:#fff}
 .pageTitle{display:flex;align-items:center;justify-content:space-between;gap:10px}.pageTitle h2{margin:0}
-.count{border-radius:999px;padding:6px 10px;font-weight:800}.count.greenC{background:#dcfae6;color:#067647}.count.redC{background:#fee4e2;color:#b42318}
+.count{border-radius:999px;padding:6px 10px;font-weight:800}.count.greenC{background:#dcfae6;color:#067647}.count.orangeC{background:#fef0c7;color:#b54708}.count.redC{background:#fee4e2;color:#b42318}
 .searchRow{display:grid;grid-template-columns:1fr auto;gap:8px}.searchRow button{min-width:90px}
-.order{border:1px solid #e4e7ec;border-left:6px solid #12a150;border-radius:15px;padding:16px;margin-top:12px;background:#fff}.order.done{border-left-color:#d92d20}
+.order{border:1px solid #e4e7ec;border-left:6px solid #12a150;border-radius:15px;padding:16px;margin-top:12px;background:#fff}.order.ready{border-left-color:#f79009}.order.done{border-left-color:#d92d20}
 .orderHead{display:flex;justify-content:space-between;gap:10px;align-items:start}.orderNo{font-size:20px;font-weight:900}.badge{padding:6px 10px;border-radius:999px;background:#f2f4f7;font-size:14px;white-space:nowrap}
 .info{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px;margin-top:12px}.info div{overflow-wrap:anywhere}.wide{grid-column:1/-1}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.msg{padding:12px;border-radius:12px;margin-top:12px}.ok{background:#dcfae6;color:#067647}.err{background:#fee4e2;color:#b42318}
 .login{max-width:470px;margin:12vh auto}.muted{color:#667085}.dangerNote{font-size:13px;color:#667085}
-@media(max-width:620px){.wrap{padding:10px}.card{padding:16px;border-radius:16px}.grid2,.info{grid-template-columns:1fr}.wide{grid-column:auto}.top{align-items:flex-start}.brand h1{font-size:23px}.nav{grid-template-columns:1fr 1fr 1fr}.nav button{font-size:13px;padding:12px 5px}.actions{grid-template-columns:1fr}.searchRow{grid-template-columns:1fr auto}}
+@media(max-width:620px){.wrap{padding:10px}.card{padding:16px;border-radius:16px}.grid2,.info{grid-template-columns:1fr}.wide{grid-column:auto}.top{align-items:flex-start}.brand h1{font-size:23px}.nav{grid-template-columns:repeat(4,1fr)}.nav button{font-size:11px;padding:12px 3px}.actions{grid-template-columns:1fr}.searchRow{grid-template-columns:1fr auto}}
 </style>
 </head>
 <body>
@@ -50,6 +50,7 @@ label{display:block;font-weight:700;margin:13px 0 7px}.btn{border:0;padding:13px
 <nav class="nav">
 <button id="navNew" class="on" onclick="showPage('new')">+ Yeni Sipariş</button>
 <button id="navActive" onclick="showPage('active')">Aktif Siparişler</button>
+<button id="navReady" onclick="showPage('ready')">Hazır</button>
 <button id="navDone" onclick="showPage('done')">Teslim Edilenler</button>
 </nav>
 
@@ -76,26 +77,24 @@ label{display:block;font-weight:700;margin:13px 0 7px}.btn{border:0;padding:13px
 </div>
 </section>
 
-<section id="pageActive" class="hidden">
-<div class="card">
+<section id="pageActive" class="hidden"><div class="card">
 <div class="pageTitle"><h2 style="color:#067647">Aktif Siparişler</h2><span id="activeCount" class="count greenC">0</span></div>
 <p class="muted">Sipariş numarasını örneğin <b>KJ000001</b> olarak yazıp arayabilirsin.</p>
-<div class="searchRow"><input id="activeSearch" placeholder="Sipariş No: KJ000001"><button class="btn green" onclick="renderActive()">Ara</button></div>
-<div id="active"></div>
-</div>
-</section>
+<div class="searchRow"><input id="activeSearch" placeholder="Sipariş No: KJ000001"><button class="btn green" onclick="renderActive()">Ara</button></div><div id="active"></div>
+</div></section>
 
-<section id="pageDone" class="hidden">
-<div class="card">
+<section id="pageReady" class="hidden"><div class="card">
+<div class="pageTitle"><h2 style="color:#b54708">Hazır</h2><span id="readyCount" class="count orangeC">0</span></div>
+<p class="muted">Durumu Hazır olan siparişler burada ayrı tutulur.</p>
+<div class="searchRow"><input id="readySearch" placeholder="Sipariş No: KJ000001"><button class="btn orange" onclick="renderReady()">Ara</button></div><div id="ready"></div>
+</div></section>
+
+<section id="pageDone" class="hidden"><div class="card">
 <div class="pageTitle"><h2 style="color:#b42318">Teslim Edilenler</h2><span id="doneCount" class="count redC">0</span></div>
 <p class="muted">Teslim edilen siparişler burada ayrı tutulur.</p>
-<div class="searchRow"><input id="doneSearch" placeholder="Sipariş No: KJ000001"><button class="btn red" onclick="renderDone()">Ara</button></div>
-<div id="done"></div>
-</div>
-</section>
-</main>
-</div>
-
+<div class="searchRow"><input id="doneSearch" placeholder="Sipariş No: KJ000001"><button class="btn red" onclick="renderDone()">Ara</button></div><div id="done"></div>
+</div></section>
+</main></div>
 <script>
 const SUPABASE_URL="https://dugdnyokncbgsjbrbgls.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_XS_0CNEfu4FbdVenrpg0AQ_7dRB07EG";
@@ -104,81 +103,24 @@ const $=id=>document.getElementById(id); let orders=[];
 const today=()=>new Date().toISOString().slice(0,10);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const orderNo=n=>'KJ'+String(n??'').padStart(6,'0');
-
 function message(id,text,ok=false){$(id).innerHTML=text?`<div class="msg ${ok?'ok':'err'}">${esc(text)}</div>`:''}
 function showLogin(){$('loginBox').classList.remove('hidden');$('app').classList.add('hidden')}
 async function showApp(){$('loginBox').classList.add('hidden');$('app').classList.remove('hidden');if(!$('siparisTarihi').value)$('siparisTarihi').value=today();await loadOrders()}
 async function init(){try{const {data,error}=await sb.auth.getSession();if(error)throw error;data.session?await showApp():showLogin();sb.auth.onAuthStateChange((_e,s)=>s?showApp():showLogin())}catch(e){showLogin();message('loginMsg','Bağlantı hatası: '+e.message)}}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();message('loginMsg','');const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)message('loginMsg','Giriş başarısız: '+error.message)});
 $('logout').onclick=()=>sb.auth.signOut();
-
-function showPage(name){
- ['new','active','done'].forEach(x=>{$('page'+x[0].toUpperCase()+x.slice(1)).classList.toggle('hidden',x!==name)});
- $('navNew').classList.toggle('on',name==='new');$('navActive').classList.toggle('on',name==='active');$('navDone').classList.toggle('on',name==='done');
- if(name==='active')renderActive(); if(name==='done')renderDone(); window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function resetForm(){
- $('orderForm').reset();$('editId').value='';$('siparisTarihi').value=today();$('durum').value='Sipariş Alındı';
- $('formTitle').textContent='Yeni Sipariş';$('saveBtn').textContent='Siparişi Kaydet';$('cancelEdit').classList.add('hidden');$('editOrderNo').classList.add('hidden');message('orderMsg','');
-}
+function showPage(name){['new','active','ready','done'].forEach(x=>{$('page'+x[0].toUpperCase()+x.slice(1)).classList.toggle('hidden',x!==name)});$('navNew').classList.toggle('on',name==='new');$('navActive').classList.toggle('on',name==='active');$('navReady').classList.toggle('on',name==='ready');$('navDone').classList.toggle('on',name==='done');if(name==='active')renderActive();if(name==='ready')renderReady();if(name==='done')renderDone();window.scrollTo({top:0,behavior:'smooth'});}
+function resetForm(){$('orderForm').reset();$('editId').value='';$('siparisTarihi').value=today();$('durum').value='Sipariş Alındı';$('formTitle').textContent='Yeni Sipariş';$('saveBtn').textContent='Siparişi Kaydet';$('cancelEdit').classList.add('hidden');$('editOrderNo').classList.add('hidden');message('orderMsg','');}
 $('cancelEdit').onclick=resetForm;
-
-$('orderForm').addEventListener('submit',async e=>{
- e.preventDefault();message('orderMsg','');const id=$('editId').value;
- const payload={musteri:$('musteri').value.trim(),irtibat_no:$('irtibatNo').value.trim(),adres:$('adres').value.trim(),urun:$('urun').value.trim(),adet:$('adet').value?Number($('adet').value):null,siparis_tarihi:$('siparisTarihi').value||null,teslim_tarihi:$('teslimTarihi').value||null,durum:$('durum').value,notlar:$('notlar').value.trim(),updated_at:new Date().toISOString()};
- const result=id?await sb.from('siparisler').update(payload).eq('id',id):await sb.from('siparisler').insert(payload);
- if(result.error){message('orderMsg','Kaydedilemedi: '+result.error.message);return}
- resetForm();message('orderMsg',id?'Sipariş güncellendi.':'Sipariş kaydedildi.',true);await loadOrders();
-});
-
-async function loadOrders(){
- const {data,error}=await sb.from('siparisler').select('*').order('id',{ascending:false});
- if(error){message('orderMsg','Siparişler yüklenemedi: '+error.message);return}
- orders=data||[];renderActive();renderDone();
-}
-
-function editOrder(id){
- const o=orders.find(x=>String(x.id)===String(id));if(!o)return;
- $('editId').value=o.id;$('musteri').value=o.musteri||'';$('irtibatNo').value=o.irtibat_no||'';$('adres').value=o.adres||'';$('urun').value=o.urun||'';$('adet').value=o.adet??'';$('siparisTarihi').value=o.siparis_tarihi||'';$('teslimTarihi').value=o.teslim_tarihi||'';$('durum').value=o.durum||'Sipariş Alındı';$('notlar').value=o.notlar||'';
- $('formTitle').textContent='Siparişi Düzenle';$('saveBtn').textContent='Değişiklikleri Kaydet';$('cancelEdit').classList.remove('hidden');$('editOrderNo').textContent=orderNo(o.siparis_no);$('editOrderNo').classList.remove('hidden');showPage('new');
-}
-
-async function deleteOrder(id,no){
- if(!confirm(orderNo(no)+' numaralı sipariş kalıcı olarak silinsin mi?'))return;
- const {error}=await sb.from('siparisler').delete().eq('id',id);
- if(error){alert('Sipariş silinemedi: '+error.message);return}
- await loadOrders();
-}
-
+$('orderForm').addEventListener('submit',async e=>{e.preventDefault();message('orderMsg','');const id=$('editId').value;const payload={musteri:$('musteri').value.trim(),irtibat_no:$('irtibatNo').value.trim(),adres:$('adres').value.trim(),urun:$('urun').value.trim(),adet:$('adet').value?Number($('adet').value):null,siparis_tarihi:$('siparisTarihi').value||null,teslim_tarihi:$('teslimTarihi').value||null,durum:$('durum').value,notlar:$('notlar').value.trim(),updated_at:new Date().toISOString()};const result=id?await sb.from('siparisler').update(payload).eq('id',id):await sb.from('siparisler').insert(payload);if(result.error){message('orderMsg','Kaydedilemedi: '+result.error.message);return}resetForm();message('orderMsg',id?'Sipariş güncellendi.':'Sipariş kaydedildi.',true);await loadOrders();});
+async function loadOrders(){const {data,error}=await sb.from('siparisler').select('*').order('id',{ascending:false});if(error){message('orderMsg','Siparişler yüklenemedi: '+error.message);return}orders=data||[];renderActive();renderReady();renderDone();}
+function editOrder(id){const o=orders.find(x=>String(x.id)===String(id));if(!o)return;$('editId').value=o.id;$('musteri').value=o.musteri||'';$('irtibatNo').value=o.irtibat_no||'';$('adres').value=o.adres||'';$('urun').value=o.urun||'';$('adet').value=o.adet??'';$('siparisTarihi').value=o.siparis_tarihi||'';$('teslimTarihi').value=o.teslim_tarihi||'';$('durum').value=o.durum||'Sipariş Alındı';$('notlar').value=o.notlar||'';$('formTitle').textContent='Siparişi Düzenle';$('saveBtn').textContent='Değişiklikleri Kaydet';$('cancelEdit').classList.remove('hidden');$('editOrderNo').textContent=orderNo(o.siparis_no);$('editOrderNo').classList.remove('hidden');showPage('new');}
+async function deleteOrder(id,no){if(!confirm(orderNo(no)+' numaralı sipariş kalıcı olarak silinsin mi?'))return;const {error}=await sb.from('siparisler').delete().eq('id',id);if(error){alert('Sipariş silinemedi: '+error.message);return}await loadOrders();}
 function normalizedSearch(v){return String(v||'').trim().toUpperCase().replace(/^KJ/,'').replace(/^0+/,'')}
-
-function card(o,done=false){
- return `<div class="order ${done?'done':''}">
- <div class="orderHead"><div class="orderNo">${orderNo(o.siparis_no)}</div><span class="badge">${esc(o.durum)}</span></div>
- <div class="info">
- <div><b>Müşteri:</b> ${esc(o.musteri)}</div><div><b>İrtibat:</b> ${esc(o.irtibat_no||'-')}</div>
- <div class="wide"><b>Adres:</b> ${esc(o.adres||'-')}</div>
- <div><b>İş / Ürün:</b> ${esc(o.urun)}</div><div><b>Adet:</b> ${esc(o.adet??'-')}</div>
- <div><b>Sipariş Tarihi:</b> ${esc(o.siparis_tarihi||'-')}</div><div><b>Teslim Tarihi:</b> ${esc(o.teslim_tarihi||'-')}</div>
- <div class="wide"><b>Not:</b> ${esc(o.notlar||'-')}</div></div>
- <div class="actions"><button class="btn black" onclick="editOrder(${o.id})">Düzenle</button><button class="btn red" onclick="deleteOrder(${o.id},${Number(o.siparis_no)||0})">Siparişi Sil</button></div>
- </div>`;
-}
-
-function renderActive(){
- const q=normalizedSearch($('activeSearch').value);
- const list=orders.filter(o=>o.durum!=='Teslim Edildi'&&(!q||String(o.siparis_no)===q));
- $('activeCount').textContent=list.length;$('active').innerHTML=list.length?list.map(o=>card(o,false)).join(''):'Aktif sipariş bulunamadı.';
-}
-function renderDone(){
- const q=normalizedSearch($('doneSearch').value);
- const list=orders.filter(o=>o.durum==='Teslim Edildi'&&(!q||String(o.siparis_no)===q));
- $('doneCount').textContent=list.length;$('done').innerHTML=list.length?list.map(o=>card(o,true)).join(''):'Teslim edilen sipariş bulunamadı.';
-}
-$('activeSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderActive()});
-$('doneSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderDone()});
-init();
+function card(o,type='active'){return `<div class="order ${type==='ready'?'ready':type==='done'?'done':''}"><div class="orderHead"><div class="orderNo">${orderNo(o.siparis_no)}</div><span class="badge">${esc(o.durum)}</span></div><div class="info"><div><b>Müşteri:</b> ${esc(o.musteri)}</div><div><b>İrtibat:</b> ${esc(o.irtibat_no||'-')}</div><div class="wide"><b>Adres:</b> ${esc(o.adres||'-')}</div><div><b>İş / Ürün:</b> ${esc(o.urun)}</div><div><b>Adet:</b> ${esc(o.adet??'-')}</div><div><b>Sipariş Tarihi:</b> ${esc(o.siparis_tarihi||'-')}</div><div><b>Teslim Tarihi:</b> ${esc(o.teslim_tarihi||'-')}</div><div class="wide"><b>Not:</b> ${esc(o.notlar||'-')}</div></div><div class="actions"><button class="btn black" onclick="editOrder(${o.id})">Düzenle</button><button class="btn red" onclick="deleteOrder(${o.id},${Number(o.siparis_no)||0})">Siparişi Sil</button></div></div>`;}
+function renderActive(){const q=normalizedSearch($('activeSearch').value);const list=orders.filter(o=>o.durum!=='Hazır'&&o.durum!=='Teslim Edildi'&&(!q||String(o.siparis_no)===q));$('activeCount').textContent=list.length;$('active').innerHTML=list.length?list.map(o=>card(o,'active')).join(''):'Aktif sipariş bulunamadı.';}
+function renderReady(){const q=normalizedSearch($('readySearch').value);const list=orders.filter(o=>o.durum==='Hazır'&&(!q||String(o.siparis_no)===q));$('readyCount').textContent=list.length;$('ready').innerHTML=list.length?list.map(o=>card(o,'ready')).join(''):'Hazır sipariş bulunamadı.';}
+function renderDone(){const q=normalizedSearch($('doneSearch').value);const list=orders.filter(o=>o.durum==='Teslim Edildi'&&(!q||String(o.siparis_no)===q));$('doneCount').textContent=list.length;$('done').innerHTML=list.length?list.map(o=>card(o,'done')).join(''):'Teslim edilen sipariş bulunamadı.';}
+$('activeSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderActive()});$('readySearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderReady()});$('doneSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderDone()});init();
 </script>
-</body>
-</html>
+</body></html>
