@@ -17,7 +17,7 @@
 button,input,select,textarea{font:inherit;border-radius:12px}input,select,textarea{width:100%;border:1px solid #d0d5dd;padding:13px;background:#fff}textarea{min-height:105px;resize:vertical}
 label{display:block;font-weight:700;margin:13px 0 7px}.btn{border:0;padding:13px 16px;font-weight:800;cursor:pointer}.black{background:#111;color:#fff}.gray{background:#667085;color:#fff}.red{background:#d92d20;color:#fff}.green{background:#12a150;color:#fff}.orange{background:#f79009;color:#fff}
 .full{width:100%;font-size:18px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hidden{display:none!important}
-.nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}.nav button{border:0;padding:14px 8px;font-weight:800;background:#e9edf2}.nav .on{background:#111;color:#fff}
+.nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}.nav button{border:0;padding:14px 8px;font-weight:800;background:#e9edf2}.nav .on{background:#111;color:#fff}.navCount{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;margin-left:5px;padding:0 7px;border-radius:999px;font-size:12px;font-weight:900;vertical-align:middle}.navCount.greenC{background:#dcfae6;color:#067647}.navCount.orangeC{background:#fef0c7;color:#b54708}.navCount.redC{background:#fee4e2;color:#b42318}
 .pageTitle{display:flex;align-items:center;justify-content:space-between;gap:10px}.pageTitle h2{margin:0}
 .count{border-radius:999px;padding:6px 10px;font-weight:800}.count.greenC{background:#dcfae6;color:#067647}.count.orangeC{background:#fef0c7;color:#b54708}.count.redC{background:#fee4e2;color:#b42318}
 .searchRow{display:grid;grid-template-columns:1fr auto;gap:8px}.searchRow button{min-width:90px}
@@ -49,9 +49,9 @@ label{display:block;font-weight:700;margin:13px 0 7px}.btn{border:0;padding:13px
 
 <nav class="nav">
 <button id="navNew" class="on" onclick="showPage('new')">+ Yeni Sipariş</button>
-<button id="navActive" onclick="showPage('active')">Aktif Siparişler</button>
-<button id="navReady" onclick="showPage('ready')">Hazır</button>
-<button id="navDone" onclick="showPage('done')">Teslim Edilenler</button>
+<button id="navActive" onclick="showPage('active')">Aktif Siparişler <span id="activeCount" class="navCount greenC">0</span></button>
+<button id="navReady" onclick="showPage('ready')">Hazır <span id="readyCount" class="navCount orangeC">0</span></button>
+<button id="navDone" onclick="showPage('done')">Teslim Edilenler <span id="doneCount" class="navCount redC">0</span></button>
 </nav>
 
 <section id="pageNew">
@@ -78,19 +78,19 @@ label{display:block;font-weight:700;margin:13px 0 7px}.btn{border:0;padding:13px
 </section>
 
 <section id="pageActive" class="hidden"><div class="card">
-<div class="pageTitle"><h2 style="color:#067647">Aktif Siparişler</h2><span id="activeCount" class="count greenC">0</span></div>
+<div class="pageTitle"><h2 style="color:#067647">Aktif Siparişler</h2></div>
 <p class="muted">Sipariş numarasını örneğin <b>KJ000001</b> olarak yazıp arayabilirsin.</p>
 <div class="searchRow"><input id="activeSearch" placeholder="Sipariş No: KJ000001"><button class="btn green" onclick="renderActive()">Ara</button></div><div id="active"></div>
 </div></section>
 
 <section id="pageReady" class="hidden"><div class="card">
-<div class="pageTitle"><h2 style="color:#b54708">Hazır</h2><span id="readyCount" class="count orangeC">0</span></div>
+<div class="pageTitle"><h2 style="color:#b54708">Hazır</h2></div>
 <p class="muted">Durumu Hazır olan siparişler burada ayrı tutulur.</p>
 <div class="searchRow"><input id="readySearch" placeholder="Sipariş No: KJ000001"><button class="btn orange" onclick="renderReady()">Ara</button></div><div id="ready"></div>
 </div></section>
 
 <section id="pageDone" class="hidden"><div class="card">
-<div class="pageTitle"><h2 style="color:#b42318">Teslim Edilenler</h2><span id="doneCount" class="count redC">0</span></div>
+<div class="pageTitle"><h2 style="color:#b42318">Teslim Edilenler</h2></div>
 <p class="muted">Teslim edilen siparişler burada ayrı tutulur.</p>
 <div class="searchRow"><input id="doneSearch" placeholder="Sipariş No: KJ000001"><button class="btn red" onclick="renderDone()">Ara</button></div><div id="done"></div>
 </div></section>
