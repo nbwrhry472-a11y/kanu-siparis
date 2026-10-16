@@ -98,26 +98,29 @@ label{display:block;font-weight:700;margin:13px 0 7px}.btn{border:0;padding:13px
 
 <section id="pageActive" class="hidden"><div class="card">
 <div class="pageTitle"><h2 style="color:#067647">Aktif Siparişler</h2></div>
-<p class="muted">Sipariş numarasını örneğin <b>KJ000001</b> olarak yazıp arayabilirsin.</p>
-<div class="searchRow"><input id="activeSearch" placeholder="Sipariş No: KJ000001"><button class="btn green" onclick="renderActive()">Ara</button></div><div id="active"></div>
+<p class="muted">Firma / müşteri adı, irtibat numarası veya sipariş no ile tüm bölümlerde arayabilirsin.</p>
+<div class="searchRow"><input id="activeSearch" placeholder="Firma, telefon, sipariş no…"><button class="btn green" onclick="renderActive()">Ara</button></div><div id="active"></div>
 </div></section>
 
 <section id="pageProduction" class="hidden"><div class="card">
 <div class="pageTitle"><h2 style="color:#067647">Üretim</h2></div>
 <p class="muted">Durumu Üretim olan siparişler burada ayrı tutulur.</p>
-<div class="searchRow"><input id="productionSearch" placeholder="Sipariş No: KJ000001"><button class="btn green" onclick="renderProduction()">Ara</button></div><div id="production"></div>
+<p class="muted">Firma / müşteri adı, irtibat numarası veya sipariş no ile tüm bölümlerde arayabilirsin.</p>
+<div class="searchRow"><input id="productionSearch" placeholder="Firma, telefon, sipariş no…"><button class="btn green" onclick="renderProduction()">Ara</button></div><div id="production"></div>
 </div></section>
 
 <section id="pageReady" class="hidden"><div class="card">
 <div class="pageTitle"><h2 style="color:#b54708">Hazır</h2></div>
 <p class="muted">Durumu Hazır olan siparişler burada ayrı tutulur.</p>
-<div class="searchRow"><input id="readySearch" placeholder="Sipariş No: KJ000001"><button class="btn orange" onclick="renderReady()">Ara</button></div><div id="ready"></div>
+<p class="muted">Firma / müşteri adı, irtibat numarası veya sipariş no ile tüm bölümlerde arayabilirsin.</p>
+<div class="searchRow"><input id="readySearch" placeholder="Firma, telefon, sipariş no…"><button class="btn orange" onclick="renderReady()">Ara</button></div><div id="ready"></div>
 </div></section>
 
 <section id="pageDone" class="hidden"><div class="card">
 <div class="pageTitle"><h2 style="color:#b42318">Teslim Edilenler</h2></div>
 <p class="muted">Teslim edilen siparişler burada ayrı tutulur.</p>
-<div class="searchRow"><input id="doneSearch" placeholder="Sipariş No: KJ000001"><button class="btn red" onclick="renderDone()">Ara</button></div><div id="done"></div>
+<p class="muted">Firma / müşteri adı, irtibat numarası veya sipariş no ile tüm bölümlerde arayabilirsin.</p>
+<div class="searchRow"><input id="doneSearch" placeholder="Firma, telefon, sipariş no…"><button class="btn red" onclick="renderDone()">Ara</button></div><div id="done"></div>
 </div></section>
 </main></div>
 <section id="printModal" class="printModal hidden" role="dialog" aria-modal="true" aria-label="Sipariş Formu">
@@ -145,12 +148,28 @@ $('orderForm').addEventListener('submit',async e=>{e.preventDefault();message('o
 async function loadOrders(){const {data,error}=await sb.from('siparisler').select('*').order('id',{ascending:false});if(error){message('orderMsg','Siparişler yüklenemedi: '+error.message);return}orders=data||[];renderActive();renderProduction();renderReady();renderDone();}
 function editOrder(id){returnPage=currentPage;const o=orders.find(x=>String(x.id)===String(id));if(!o)return;$('editId').value=o.id;$('musteri').value=o.musteri||'';$('irtibatNo').value=o.irtibat_no||'';$('adres').value=o.adres||'';$('urun').value=o.urun||'';$('adet').value=o.adet??'';$('siparisTarihi').value=o.siparis_tarihi||'';$('teslimTarihi').value=o.teslim_tarihi||'';$('durum').value=o.durum||'Sipariş Alındı';$('notlar').value=o.notlar||'';$('toplamTutar').value=o.toplam_tutar??'';$('alinanOdeme').value=o.alinan_odeme??'';$('faturali').value=o.faturali==null?'':String(o.faturali);$('faturaKesildi').value=String(o.fatura_kesildi===true);updateBalance();toggleInvoice();$('formTitle').textContent='Siparişi Düzenle';$('saveBtn').textContent='Değişiklikleri Kaydet';$('cancelEdit').classList.remove('hidden');$('editOrderNo').textContent=orderNo(o.siparis_no);$('editOrderNo').classList.remove('hidden');showPage('new');}
 async function deleteOrder(id,no){if(!confirm(orderNo(no)+' numaralı sipariş kalıcı olarak silinsin mi?'))return;const {error}=await sb.from('siparisler').delete().eq('id',id);if(error){alert('Sipariş silinemedi: '+error.message);return}await loadOrders();}
-function normalizedSearch(v){return String(v||'').trim().toUpperCase().replace(/^KJ/,'').replace(/^0+/,'')}
+function normalizedSearch(v){return String(v??'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').trim().replace(/\s+/g,' ');}
+function matchesOrder(o,query){
+ const q=normalizedSearch(query);if(!q)return true;
+ const fields=[o.musteri,o.irtibat_no,o.adres,o.urun,o.notlar,o.durum,o.siparis_tarihi,o.teslim_tarihi,o.adet,orderNo(o.siparis_no),o.siparis_no];
+ if(fields.some(value=>normalizedSearch(value).includes(q)))return true;
+ const digits=q.replace(/\D/g,'');
+ if(digits&&/^[+\d\s().-]+$/.test(q)&&String(o.irtibat_no||'').replace(/\D/g,'').includes(digits))return true;
+ return /^kj\s*\d+$/.test(q)&&Number(q.replace(/^kj\s*/,''))===Number(o.siparis_no);
+}
 function card(o,type='active'){return `<div class="order ${type==='ready'?'ready':type==='done'?'done':''}"><div class="orderHead"><div class="orderNo">${orderNo(o.siparis_no)}</div><span class="badge">${esc(o.durum)}</span></div><div class="info"><div><b>Müşteri:</b> ${esc(o.musteri)}</div><div><b>İrtibat:</b> ${esc(o.irtibat_no||'-')}</div><div class="wide"><b>Adres:</b> ${esc(o.adres||'-')}</div><div><b>İş / Ürün:</b> ${esc(o.urun)}</div><div><b>Adet:</b> ${esc(o.adet??'-')}</div><div><b>Sipariş Tarihi:</b> ${esc(o.siparis_tarihi||'-')}</div><div><b>Teslim Tarihi:</b> ${esc(o.teslim_tarihi||'-')}</div><div class="wide"><b>Not:</b> ${esc(o.notlar||'-')}</div></div>${financeCard(o)}<div class="actions"><button class="btn formAction" onclick="openOrderForm(${o.id})">A4 Sipariş Formu / PDF / Yazdır</button><button class="btn black" onclick="editOrder(${o.id})">Düzenle</button><button class="btn red" onclick="deleteOrder(${o.id},${Number(o.siparis_no)||0})">Siparişi Sil</button></div></div>`;}
-function renderActive(){const q=normalizedSearch($('activeSearch').value);const list=orders.filter(o=>(o.durum==='Sipariş Alındı'||o.durum==='Grafik')&&(!q||String(o.siparis_no)===q));$('activeCount').textContent=list.length;$('active').innerHTML=list.length?list.map(o=>card(o,'active')).join(''):'Aktif sipariş bulunamadı.';}
-function renderProduction(){const q=normalizedSearch($('productionSearch').value);const list=orders.filter(o=>o.durum==='Üretim'&&(!q||String(o.siparis_no)===q));$('productionCount').textContent=list.length;$('production').innerHTML=list.length?list.map(o=>card(o,'active')).join(''):'Üretimde sipariş bulunamadı.';}
-function renderReady(){const q=normalizedSearch($('readySearch').value);const list=orders.filter(o=>o.durum==='Hazır'&&(!q||String(o.siparis_no)===q));$('readyCount').textContent=list.length;$('ready').innerHTML=list.length?list.map(o=>card(o,'ready')).join(''):'Hazır sipariş bulunamadı.';}
-function renderDone(){const q=normalizedSearch($('doneSearch').value);const list=orders.filter(o=>o.durum==='Teslim Edildi'&&(!q||String(o.siparis_no)===q));$('doneCount').textContent=list.length;$('done').innerHTML=list.length?list.map(o=>card(o,'done')).join(''):'Teslim edilen sipariş bulunamadı.';}
+function renderOrderSection(page,belongs,emptyText){
+ const query=$(page+'Search').value.trim();
+ const ownOrders=orders.filter(belongs);
+ $(page+'Count').textContent=ownOrders.length;
+ const list=query?orders.filter(o=>matchesOrder(o,query)):ownOrders;
+ const summary=query?`<p class="muted" role="status">Tüm bölümlerde ${list.length} sipariş bulundu.</p>`:'';
+ $(page).innerHTML=summary+(list.length?list.map(o=>card(o,o.durum==='Hazır'?'ready':o.durum==='Teslim Edildi'?'done':'active')).join(''):(query?'Aramanıza uygun sipariş bulunamadı.':emptyText));
+}
+function renderActive(){renderOrderSection('active',o=>o.durum==='Sipariş Alındı'||o.durum==='Grafik','Aktif sipariş bulunamadı.');}
+function renderProduction(){renderOrderSection('production',o=>o.durum==='Üretim','Üretimde sipariş bulunamadı.');}
+function renderReady(){renderOrderSection('ready',o=>o.durum==='Hazır','Hazır sipariş bulunamadı.');}
+function renderDone(){renderOrderSection('done',o=>o.durum==='Teslim Edildi','Teslim edilen sipariş bulunamadı.');}
 function moneyInput(id){const v=$(id).value;return v===''?null:Math.round(Number(v)*100)/100;}
 function moneyText(v){return v==null?'Belirtilmedi':Number(v).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' TL';}
 function remaining(o){return o.toplam_tutar==null?null:(Math.round(Number(o.toplam_tutar)*100)-Math.round(Number(o.alinan_odeme??0)*100))/100;}
@@ -189,6 +208,6 @@ function createOrderPdf(o){
 $('downloadPdf').onclick=()=>{if(!printOrder)return;try{message('pdfMsg','');createOrderPdf(printOrder).save(orderNo(printOrder.siparis_no)+'-siparis-formu.pdf');}catch(e){message('pdfMsg',e.message);}};
 $('sharePdf').onclick=async()=>{if(!printOrder)return;try{message('pdfMsg','');const file=new File([createOrderPdf(printOrder).output('blob')],orderNo(printOrder.siparis_no)+'-siparis-formu.pdf',{type:'application/pdf'});if(navigator.canShare?.({files:[file]})&&navigator.share){await navigator.share({files:[file]});}else{message('pdfMsg','Bu tarayıcı PDF paylaşmayı desteklemiyor. PDF İndir ile kaydedip dosyayı Canon uygulamanızdan açabilirsiniz.');}}catch(e){if(e.name!=='AbortError')message('pdfMsg',e.message);}};
 
-$('activeSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderActive()});$('productionSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderProduction()});$('readySearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderReady()});$('doneSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderDone()});init();
+$('activeSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderActive()});$('productionSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderProduction()});$('readySearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderReady()});$('doneSearch').addEventListener('keydown',e=>{if(e.key==='Enter')renderDone()});[['active',renderActive],['production',renderProduction],['ready',renderReady],['done',renderDone]].forEach(([page,render])=>$(page+'Search').addEventListener('input',render));init();
 </script>
 </body></html>
